@@ -1,0 +1,19 @@
+# k8s/storage/pvc-vault.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vault-pvc-0
+  namespace: vault
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  resources: { requests: { storage: 5Gi } }
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vault-pvc-1
+  namespace: vault
+spec:
+  accessModes: [ "ReadWriteOnce" ]
+  resources: { requests: { storage: 5Gi } }
+

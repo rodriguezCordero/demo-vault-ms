@@ -1,0 +1,19 @@
+# k8s/storage/pv-vault.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vault-pv-0
+spec:
+  capacity: { storage: 5Gi }
+  accessModes: [ "ReadWriteOnce" ]
+  hostPath: { path: /Kube_content/vault/pv-0 }
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vault-pv-1
+spec:
+  capacity: { storage: 5Gi }
+  accessModes: [ "ReadWriteOnce" ]
+  hostPath: { path: /Kube_content/vault/pv-1 }
+

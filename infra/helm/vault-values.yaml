@@ -1,0 +1,79 @@
+# helm/vault-values.yaml  – override para Helm chart hashicorp/vault
+# Adaptado a Minikube (1 nodo) con 2 réplicas HA + TLS
+
+global:
+  tlsDisable: false          # Mantener TLS
+  openshift: false
+
+############################################################
+# SERVIDOR VAULT
+############################################################
+server:
+  # ▸ IMPORTANTÍSIMO: sin reglas de (anti)affinity
+  affinity: {}               # ← permite que ambas réplicas vivan en el mismo nodo
+  podAntiAffinity: "soft"
+
+  image:
+    repository: hashicorp/vault    # usa OSS; cámbialo a *-enterprise si aplica
+    tag: "1.18.4"
+
+  resources:                       # footprint pequeño para la VM
+    requests:
+      memory: 256Mi
+      cpu: 200m
+    limits:
+      memory: 512Mi
+      cpu: 400m
+
+  standalone:
+    enabled: false                 # Modo HA / Raft
+
+  # Volúmenes persistentes (PVC se crean vía StorageClass “standard”)
+  dataStorage:
+    enabled: true
+    size: 10Gi                     # cada réplica
+    storageClass: "standard"       # provisioner host-path de Minikube
+
+  ##########################################################
+  # HA / Raft
+  ##########################################################
+  ha:
+    enabled: true
+    replicas: 2
+    raft:
+      enabled: true
+      setNodeId: true
+      config: |
+        ui = true
+        cluster_name = "vault-poc"
+        listener "tcp" {
+          address         = "[::]:8200"
+          cluster_address = "[::]:8201"
+          tls_cert_file   = "/vault/userconfig/tls-server/tls.crt"
+          tls_key_file    = "/vault/userconfig/tls-server/tls.key"
+        }
+        storage "raft" {
+          path = "/vault/data"
+        }
+
+  ##########################################################
+  # TLS (secret ya creado en namespace vault)
+  ##########################################################
+  extraVolumes:
+    - type: secret
+      name: tls-server
+    - type: secret
+      name: tls-ca
+
+  extraEnvironmentVars:
+    VAULT_CACERT: /vault/userconfig/tls-ca/tls.crt
+
+############################################################
+# UI
+############################################################
+ui:
+  enabled: true
+  serviceType: NodePort        # Minikube asigna NodePort aleatorio
+  serviceNodePort: null        # (puedes poner fijo si lo prefieres)
+  externalPort: 8200
+

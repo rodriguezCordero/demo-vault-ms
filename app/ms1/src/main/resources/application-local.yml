@@ -1,0 +1,5 @@
+spring:
+  cloud:
+    vault:
+      enabled: false   # desactiva integración cuando trabajas sin Vault
+
